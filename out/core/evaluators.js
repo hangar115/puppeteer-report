@@ -156,6 +156,9 @@ async function getHeadersEvaluator(basePdfBuffer) {
             // fill total page
             const totalPagesElements = cloned.getElementsByClassName("totalPages");
             setElementsValue(totalPagesElements, pagesCount.toString());
+            // fill disclosure page numbers
+            const disclosurePageElements = cloned.getElementsByClassName("disclosurePage");
+            setElementsValue(disclosurePageElements, (pagesCount - 1).toString());
             document.body.appendChild(cloned);
             // trigger element onchange to support JS
             cloned.dispatchEvent(new Event("change", { bubbles: true }));
