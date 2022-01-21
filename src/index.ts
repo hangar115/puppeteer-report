@@ -39,13 +39,12 @@ async function pdfPage(page: Page, options?: PDFOptions): Promise<Uint8Array> {
     pdfOptions?.scale
   );
 
-  const { headerHeight, footerHeight } = await page.evaluate(
-    getHeightFunc,
-    getHeightArg
-  );
+  const { firstHeaderHeight, secondHeaderHeight, footerHeight } =
+    await page.evaluate(getHeightFunc, getHeightArg);
 
   const [basePageEvalFunc, basePageEvalArg] = core.getBaseEvaluator(
-    headerHeight,
+    firstHeaderHeight,
+    secondHeaderHeight,
     footerHeight
   );
   await page.evaluate(basePageEvalFunc, basePageEvalArg);
@@ -62,7 +61,8 @@ async function pdfPage(page: Page, options?: PDFOptions): Promise<Uint8Array> {
   const result = await core.createReport(
     doc,
     headerPdfBuffer,
-    headerHeight,
+    firstHeaderHeight,
+    secondHeaderHeight,
     footerHeight
   );
 

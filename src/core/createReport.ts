@@ -3,7 +3,8 @@ import { PDFDocument, BlendMode } from "pdf-lib";
 export async function createReport(
   baseDoc: PDFDocument,
   headersPdfBuffer: Uint8Array,
-  headerHeight: number,
+  firstHeaderHeight: number,
+  secondHeaderHeight: number,
   footerHeight: number
 ) {
   const headerDoc = await PDFDocument.load(headersPdfBuffer);
@@ -11,7 +12,8 @@ export async function createReport(
   const basePages = baseDoc.getPages();
   const headerPages = headerDoc.getPages();
 
-  const hasBoth = !!headerHeight && !!footerHeight;
+  const hasBoth =
+    (!!firstHeaderHeight || !!secondHeaderHeight) && !!footerHeight;
 
   // get pages dimensions
   const x = basePages[0].getWidth();
@@ -19,7 +21,8 @@ export async function createReport(
 
   // 1 inch = 96 px
   // PDF unit =  inch * 72/1
-  const pdfHeaderHeight = (headerHeight / 96) * 72;
+  const pdfFirstHeaderHeight = (firstHeaderHeight / 96) * 72;
+  const pdfSecondHeaderHeight = (secondHeaderHeight / 96) * 72;
   const pdfFooterHeight = (footerHeight / 96) * 72;
 
   // embed all headers pdf pages in the base pdf
@@ -34,13 +37,24 @@ export async function createReport(
     // have only header or
     // have both header and footer and we are in odd pages
     // 1, 3, 5, etc
-    if (headerHeight && (!hasBoth || isOdd)) {
-      boxes.push({
-        bottom: y - pdfHeaderHeight,
-        left: 0,
-        right: x,
-        top: y!,
-      });
+    if (i == 1) {
+      if (pdfFirstHeaderHeight && (!hasBoth || isOdd)) {
+        boxes.push({
+          bottom: y - firstHeaderHeight,
+          left: 0,
+          right: x,
+          top: y!,
+        });
+      }
+    } else {
+      if (pdfSecondHeaderHeight && (!hasBoth || isOdd)) {
+        boxes.push({
+          bottom: y - secondHeaderHeight,
+          left: 0,
+          right: x,
+          top: y!,
+        });
+      }
     }
 
     // have only footer or
@@ -65,13 +79,24 @@ export async function createReport(
     const size = embeddedPage.size();
     const isOdd = i % 2 != 0;
 
-    if (headerHeight && (!hasBoth || isOdd)) {
-      basePages[baseIndex].drawPage(embeddedPage, {
-        ...size,
-        x: x - size.width,
-        y: y - size.height,
-        blendMode: BlendMode.Multiply
-      });
+    if (i == 1) {
+      if (firstHeaderHeight && (!hasBoth || isOdd)) {
+        basePages[baseIndex].drawPage(embeddedPage, {
+          ...size,
+          x: x - size.width,
+          y: y - size.height,
+          blendMode: BlendMode.Multiply,
+        });
+      }
+    } else {
+      if (secondHeaderHeight && (!hasBoth || isOdd)) {
+        basePages[baseIndex].drawPage(embeddedPage, {
+          ...size,
+          x: x - size.width,
+          y: y - size.height,
+          blendMode: BlendMode.Multiply,
+        });
+      }
     }
 
     if (footerHeight && (!hasBoth || !isOdd)) {
@@ -79,7 +104,7 @@ export async function createReport(
         ...size,
         x: x - size.width,
         y: 0,
-        blendMode: BlendMode.Multiply
+        blendMode: BlendMode.Multiply,
       });
     }
 

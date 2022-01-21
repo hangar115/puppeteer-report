@@ -43,7 +43,8 @@ export function getHeightEvaluator(
       return 0;
     };
 
-    const header = document.getElementById("header");
+    const firstHeader = document.getElementById("first-header");
+    const secondHeader = document.getElementById("second-header");
     const footer = document.getElementById("footer");
 
     // inject a style sheet
@@ -53,17 +54,21 @@ export function getHeightEvaluator(
     const styleSheet = styleEl.sheet!;
 
     // to respect user-defined PDF margins,
-    if (header) {
-      styleSheet.insertRule(`#header { margin-top: ${marginTop}`);
+    if (firstHeader) {
+      styleSheet.insertRule(`#first-header { margin-top: ${marginTop}`);
+    }
+    if (secondHeader) {
+      styleSheet.insertRule(`#second-header { margin-top: ${marginTop}`);
     }
     if (footer) {
       styleSheet.insertRule(`#footer { margin-bottom: ${marginBottom}`);
     }
 
-    const headerHeight = getHeight(header);
+    const firstHeaderHeight = getHeight(firstHeader);
+    const secondHeaderHeight = getHeight(secondHeader);
     const footerHeight = getHeight(footer);
 
-    return { headerHeight, footerHeight };
+    return { firstHeaderHeight, secondHeaderHeight, footerHeight };
   };
 
   return [pageFunc, argument] as [
@@ -94,12 +99,21 @@ export function getHeightEvaluator(
 //  ------------
 // |            |
 //      ...
-export function getBaseEvaluator(headerHeight: number, footerHeight: number) {
-  const argument = { headerHeight, footerHeight };
+export function getBaseEvaluator(
+  firstHeaderHeight: number,
+  secondHeaderHeight: number,
+  footerHeight: number
+) {
+  const argument = { firstHeaderHeight, secondHeaderHeight, footerHeight };
   type ArgumentType = typeof argument;
 
-  const pageFunc = ({ headerHeight, footerHeight }: ArgumentType) => {
-    const header = document.getElementById("header");
+  const pageFunc = ({
+    firstHeaderHeight,
+    secondHeaderHeight,
+    footerHeight,
+  }: ArgumentType) => {
+    const firstHeader = document.getElementById("first-header");
+    const secondHeader = document.getElementById("second-header");
     const footer = document.getElementById("footer");
 
     // reset body margin
@@ -129,7 +143,8 @@ export function getBaseEvaluator(headerHeight: number, footerHeight: number) {
       }
     };
 
-    evaluate(header, headerHeight, true);
+    evaluate(firstHeader, firstHeaderHeight, true);
+    evaluate(secondHeader, secondHeaderHeight, true);
     evaluate(footer, footerHeight, false);
   };
 
@@ -202,10 +217,12 @@ export async function getHeadersEvaluator(basePdfBuffer: Uint8Array) {
       addPageBreak();
     };
 
-    const header = document.getElementById("header");
+    const firstHeader = document.getElementById("first-header");
+    const secondHeader = document.getElementById("second-header");
     const footer = document.getElementById("footer");
 
-    resetStyle(header);
+    resetStyle(firstHeader);
+    resetStyle(secondHeader);
     resetStyle(footer);
 
     // clear the page content
@@ -223,9 +240,16 @@ export async function getHeadersEvaluator(basePdfBuffer: Uint8Array) {
 
     // duplicate the header and footer element for each page
     for (let i = 0; i < pagesCount; i++) {
-      if (header) {
-        cloneElement(header, (i + 1).toString());
+      if (i == 0) {
+        if (firstHeader) {
+          cloneElement(firstHeader, (i + 1).toString());
+        }
+      } else {
+        if (secondHeader) {
+          cloneElement(secondHeader, (i + 1).toString());
+        }
       }
+
       if (footer) {
         cloneElement(footer, (i + 1).toString());
       }
