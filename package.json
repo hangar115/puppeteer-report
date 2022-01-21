@@ -2,8 +2,8 @@
   "name": "puppeteer-report",
   "version": "3.0.1",
   "description": "create pdf report with header, footer and page number with puppeteer",
-  "main": "src/index.ts",
-  "types": "src/types.ts",
+  "main": "out/index.js",
+  "types": "out/index.d.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/hangar115/puppeteer-report"
