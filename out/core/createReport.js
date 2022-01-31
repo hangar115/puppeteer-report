@@ -27,7 +27,7 @@ async function createReport(baseDoc, headersPdfBuffer, firstHeaderHeight, second
         if (i == 1) {
             if (pdfFirstHeaderHeight && (!hasBoth || isOdd)) {
                 boxes.push({
-                    bottom: y - firstHeaderHeight,
+                    bottom: y - firstHeaderHeight + 24,
                     left: 0,
                     right: x,
                     top: y,
