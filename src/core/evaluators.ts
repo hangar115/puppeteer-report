@@ -210,9 +210,10 @@ export async function getHeadersEvaluator(basePdfBuffer: Uint8Array) {
       setElementsValue(totalPagesElements, pagesCount.toString());
 
       // fill disclosure page numbers
+      const disclosurePageNum = pagesCount - 1;
       const disclosurePageElements =
         cloned.getElementsByClassName("disclosurePage");
-      setElementsValue(disclosurePageElements, (pagesCount - 1).toString());
+      setElementsValue(disclosurePageElements, disclosurePageNum.toString());
 
       document.body.appendChild(cloned);
 
