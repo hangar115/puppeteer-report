@@ -160,6 +160,13 @@ async function getHeadersEvaluator(basePdfBuffer) {
             const disclosurePageNum = pagesCount - 1;
             const disclosurePageElements = cloned.getElementsByClassName("disclosurePage");
             setElementsValue(disclosurePageElements, disclosurePageNum.toString());
+            const disclosureTextElements = cloned.querySelectorAll("disclosureText");
+            if (parseInt(pageNumber, 10) > 1) {
+                for (let index = 0; index < disclosureTextElements.length; index++) {
+                    const element = disclosureTextElements[index];
+                    element.style.opacity = "0";
+                }
+            }
             document.body.appendChild(cloned);
             // trigger element onchange to support JS
             cloned.dispatchEvent(new Event("change", { bubbles: true }));
