@@ -160,7 +160,7 @@ async function getHeadersEvaluator(basePdfBuffer) {
             const disclosurePageNum = pagesCount - 1;
             const disclosurePageElements = cloned.getElementsByClassName("disclosurePage");
             setElementsValue(disclosurePageElements, disclosurePageNum.toString());
-            const disclosureTextElements = cloned.querySelectorAll("disclosureText");
+            const disclosureTextElements = cloned.querySelectorAll(".disclosureText");
             if (parseInt(pageNumber, 10) > 1) {
                 for (let index = 0; index < disclosureTextElements.length; index++) {
                     const element = disclosureTextElements[index];
