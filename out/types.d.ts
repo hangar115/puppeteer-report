@@ -2,19 +2,19 @@
 interface JSONObject {
     [key: string]: Serializable;
 }
-declare type JSONArray = Serializable[];
-declare type Serializable = number | string | boolean | null | BigInt | JSONArray | JSONObject;
-declare type SerializableOrJSHandle = Serializable;
-declare type EvaluateFn<T = any> = string | ((arg1: T, ...args: any[]) => any);
-declare type UnwrapPromiseLike<T> = T extends PromiseLike<infer U> ? U : T;
-declare type EvaluateFnReturnType<T extends EvaluateFn> = T extends (...args: any[]) => infer R ? R : any;
+type JSONArray = Serializable[];
+type Serializable = number | string | boolean | null | BigInt | JSONArray | JSONObject;
+type SerializableOrJSHandle = Serializable;
+type EvaluateFn<T = any> = string | ((arg1: T, ...args: any[]) => any);
+type UnwrapPromiseLike<T> = T extends PromiseLike<infer U> ? U : T;
+type EvaluateFnReturnType<T extends EvaluateFn> = T extends (...args: any[]) => infer R ? R : any;
 interface PDFMargin {
     top?: string | number;
     bottom?: string | number;
     left?: string | number;
     right?: string | number;
 }
-declare type PaperFormat = "letter" | "legal" | "tabloid" | "ledger" | "a0" | "a1" | "a2" | "a3" | "a4" | "a5" | "a6";
+type PaperFormat = "letter" | "legal" | "tabloid" | "ledger" | "a0" | "a1" | "a2" | "a3" | "a4" | "a5" | "a6";
 export interface PDFOptions {
     /**
      * Scales the rendering of the web page. Amount must be between `0.1` and `2`.
