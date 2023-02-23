@@ -20,6 +20,18 @@ async function pdf(browser: Browser, file: string, options?: PDFOptions) {
   }
 }
 
+const docHeight = () => {
+  const body = document.body;
+  const html = document.documentElement;
+  return Math.max(
+    body.scrollHeight,
+    body.offsetHeight,
+    html.clientHeight,
+    html.scrollHeight,
+    html.offsetHeight
+  );
+};
+
 /**
  * Convert a Page to PDF
  * @param page puppeteer/puppeteer-core page object
@@ -48,15 +60,34 @@ async function pdfPage(page: Page, options?: PDFOptions): Promise<Uint8Array> {
     footerHeight
   );
   await page.evaluate(basePageEvalFunc, basePageEvalArg);
+  const height = await page.evaluate(docHeight);
 
-  const basePdfBuffer = await page.pdf(pdfOptions);
+  let basePdfBuffer;
+  if (pdfOptions.isOnePage) {
+    pdfOptions.format = undefined;
+    basePdfBuffer = await page.pdf({
+      ...pdfOptions,
+      height: `${height}px`,
+    });
+  } else {
+    basePdfBuffer = await page.pdf(pdfOptions);
+  }
 
   const [doc, headerEvalFunc, headerEvalArg] = await core.getHeadersEvaluator(
     basePdfBuffer
   );
   await page.evaluate(headerEvalFunc, headerEvalArg);
 
-  const headerPdfBuffer = await page.pdf(pdfOptions);
+  let headerPdfBuffer;
+  if (pdfOptions.isOnePage) {
+    pdfOptions.format = undefined;
+    headerPdfBuffer = await page.pdf({
+      ...pdfOptions,
+      height: `${height}px`,
+    });
+  } else {
+    headerPdfBuffer = await page.pdf(pdfOptions);
+  }
 
   const result = await core.createReport(
     doc,

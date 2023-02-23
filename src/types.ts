@@ -136,6 +136,7 @@ export interface PDFOptions {
    * @defaultValue the empty string, which means the PDF will not be written to disk.
    */
   path?: string;
+  isOnePage?: boolean;
 }
 
 export interface Page {
