@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getHeadersEvaluator = exports.getBaseEvaluator = exports.getHeightEvaluator = void 0;
 const pdf_lib_1 = require("pdf-lib");
@@ -126,88 +135,90 @@ exports.getBaseEvaluator = getBaseEvaluator;
 //  ------------
 // |  header 2  |
 //       ...
-async function getHeadersEvaluator(basePdfBuffer) {
-    const doc = await pdf_lib_1.PDFDocument.load(basePdfBuffer);
-    const argument = { pagesCount: doc.getPageCount() };
-    const pageFunc = ({ pagesCount }) => {
-        // set a value for all selected elements
-        const setElementsValue = (elements, value) => {
-            for (const element of elements) {
-                element.textContent = value;
+function getHeadersEvaluator(basePdfBuffer) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const doc = yield pdf_lib_1.PDFDocument.load(basePdfBuffer);
+        const argument = { pagesCount: doc.getPageCount() };
+        const pageFunc = ({ pagesCount }) => {
+            // set a value for all selected elements
+            const setElementsValue = (elements, value) => {
+                for (const element of elements) {
+                    element.textContent = value;
+                }
+            };
+            const resetStyle = (element) => {
+                if (element) {
+                    element.style.display = "block";
+                }
+            };
+            // add a page break after each element
+            const addPageBreak = () => {
+                const pageBreak = document.createElement("div");
+                pageBreak.style.pageBreakAfter = "always";
+                document.body.appendChild(pageBreak);
+            };
+            // duplicate an element in the page
+            const cloneElement = (element, pageNumber) => {
+                const cloned = element.cloneNode(true);
+                // fill pageNumber
+                const pageNumberElements = cloned.getElementsByClassName("pageNumber");
+                setElementsValue(pageNumberElements, pageNumber);
+                // fill total page
+                const totalPagesElements = cloned.getElementsByClassName("totalPages");
+                setElementsValue(totalPagesElements, pagesCount.toString());
+                // fill disclosure page numbers
+                const disclosurePageNum = pagesCount - 1;
+                const disclosurePageElements = cloned.getElementsByClassName("disclosurePage");
+                setElementsValue(disclosurePageElements, disclosurePageNum.toString());
+                const disclosureTextElements = cloned.querySelectorAll(".disclosureText");
+                if (parseInt(pageNumber, 10) > 1) {
+                    for (let index = 0; index < disclosureTextElements.length; index++) {
+                        const element = disclosureTextElements[index];
+                        element.style.opacity = "0";
+                    }
+                }
+                document.body.appendChild(cloned);
+                // trigger element onchange to support JS
+                cloned.dispatchEvent(new Event("change", { bubbles: true }));
+                addPageBreak();
+            };
+            const firstHeader = document.getElementById("first-header");
+            const secondHeader = document.getElementById("second-header");
+            const footer = document.getElementById("footer");
+            resetStyle(firstHeader);
+            resetStyle(secondHeader);
+            resetStyle(footer);
+            // clear the page content
+            document.body.innerHTML = "";
+            // remove page margin
+            const styleEl = document.getElementById("page__style");
+            const styleSheet = styleEl.sheet;
+            while (styleSheet.rules.length > 0) {
+                styleSheet.deleteRule(0);
             }
-        };
-        const resetStyle = (element) => {
-            if (element) {
-                element.style.display = "block";
-            }
-        };
-        // add a page break after each element
-        const addPageBreak = () => {
-            const pageBreak = document.createElement("div");
-            pageBreak.style.pageBreakAfter = "always";
-            document.body.appendChild(pageBreak);
-        };
-        // duplicate an element in the page
-        const cloneElement = (element, pageNumber) => {
-            const cloned = element.cloneNode(true);
-            // fill pageNumber
-            const pageNumberElements = cloned.getElementsByClassName("pageNumber");
-            setElementsValue(pageNumberElements, pageNumber);
-            // fill total page
-            const totalPagesElements = cloned.getElementsByClassName("totalPages");
-            setElementsValue(totalPagesElements, pagesCount.toString());
-            // fill disclosure page numbers
-            const disclosurePageNum = pagesCount - 1;
-            const disclosurePageElements = cloned.getElementsByClassName("disclosurePage");
-            setElementsValue(disclosurePageElements, disclosurePageNum.toString());
-            const disclosureTextElements = cloned.querySelectorAll(".disclosureText");
-            if (parseInt(pageNumber, 10) > 1) {
-                for (let index = 0; index < disclosureTextElements.length; index++) {
-                    const element = disclosureTextElements[index];
-                    element.style.opacity = "0";
+            // inject new style
+            styleSheet.insertRule(`@page { margin-top: 0; margin-bottom:0; }`);
+            // duplicate the header and footer element for each page
+            for (let i = 0; i < pagesCount; i++) {
+                if (i == 0) {
+                    if (firstHeader) {
+                        cloneElement(firstHeader, (i + 1).toString());
+                    }
+                }
+                else {
+                    if (secondHeader) {
+                        cloneElement(secondHeader, (i + 1).toString());
+                    }
+                }
+                if (footer) {
+                    cloneElement(footer, (i + 1).toString());
                 }
             }
-            document.body.appendChild(cloned);
-            // trigger element onchange to support JS
-            cloned.dispatchEvent(new Event("change", { bubbles: true }));
-            addPageBreak();
+            // fill title
+            const titleElements = document.getElementsByClassName("title");
+            setElementsValue(titleElements, document.title);
         };
-        const firstHeader = document.getElementById("first-header");
-        const secondHeader = document.getElementById("second-header");
-        const footer = document.getElementById("footer");
-        resetStyle(firstHeader);
-        resetStyle(secondHeader);
-        resetStyle(footer);
-        // clear the page content
-        document.body.innerHTML = "";
-        // remove page margin
-        const styleEl = document.getElementById("page__style");
-        const styleSheet = styleEl.sheet;
-        while (styleSheet.rules.length > 0) {
-            styleSheet.deleteRule(0);
-        }
-        // inject new style
-        styleSheet.insertRule(`@page { margin-top: 0; margin-bottom:0; }`);
-        // duplicate the header and footer element for each page
-        for (let i = 0; i < pagesCount; i++) {
-            if (i == 0) {
-                if (firstHeader) {
-                    cloneElement(firstHeader, (i + 1).toString());
-                }
-            }
-            else {
-                if (secondHeader) {
-                    cloneElement(secondHeader, (i + 1).toString());
-                }
-            }
-            if (footer) {
-                cloneElement(footer, (i + 1).toString());
-            }
-        }
-        // fill title
-        const titleElements = document.getElementsByClassName("title");
-        setElementsValue(titleElements, document.title);
-    };
-    return [doc, pageFunc, argument];
+        return [doc, pageFunc, argument];
+    });
 }
 exports.getHeadersEvaluator = getHeadersEvaluator;
